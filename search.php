@@ -1,7 +1,17 @@
 <?php 
 	require_once('connect.inc');
-	require_once('storedProcedures.inc');
+	
 	$pdo = createPDO();
+	
+	// Create Smarty Object
+	define("USER_HOME_DIR", "/home/stud/s3241690");
+	require(USER_HOME_DIR . "/php/Smarty-3.1.11/libs/Smarty.class.php");
+	$smartyEngine = new Smarty();
+	$smartyEngine->template_dir = USER_HOME_DIR . "/php/Smarty-Work-Dir/templates";
+	$smartyEngine->compile_dir = USER_HOME_DIR . "/php/Smarty-Work-Dir/templates_c";
+	$smartyEngine->cache_dir = USER_HOME_DIR . "/php/Smarty-Work-Dir/cache";
+	$smartyEngine->config_dir = USER_HOME_DIR . "/php/Smarty-Work-Dir/configs";
+	$smartyEngine->display('header.tpl');
 	
 	// Get Regions
 	$query = 'select region_name from region';
@@ -76,156 +86,48 @@ if($_GET['errors'] != null)
 	$errors = $_GET['errors'];
 ?>
 
-<html>
-	<head>
-		<Title>WDA Assignment 1: Wine Database Search Page</Title>
-		<link rel="stylesheet" href="style.css" type="text/css" />
-	</head>
-	
-	<body>
-	
-	<h1>WineStore Database: Search Page</h1>
-
 <?php
 	/* Check if there are any error messages to display */
 	switch($errors)
 	{
 	case -1:
-		echo '<p class="error">You have attempted to search the database in an unauthorise way, please re-submit:</p>';
+		$smartyEngine->assign('error', 'You have attempted to search the database in an unauthorise way, please re-submit:');
+		$smartyEngine->display('error.tpl');
 		break;
-	
 	case 1:
-		echo '<p class="error">You have entered invalid year requirements, please check them and re-submit:</p>';
+		$smartyEngine->assign('error', 'You have entered invalid year requirements, please check them and re-submit:');
+		$smartyEngine->display('error.tpl');
 		break;
 	case 2:
-		echo '<p class="error">You have entered invalid cost requirements, please check them and re-submit:</p>';
+		$smartyEngine->assign('error', 'You have entered invalid cost requirements, please check them and re-submit:');
+		$smartyEngine->display('error.tpl');
 		break;
 	case 3:
-		echo '<p class="error">You have entered invalid year requirements, please check them and re-submit:</p>';
-		echo '<p class="error">You have entered invalid cost requirements, please check them and re-submit:</p>';
-		break;
-		
+		$smartyEngine->assign('error', 'You have attempted to search the database in an unauthorise way, please re-submit:');
+		$smartyEngine->display('error.tpl');
+		break;	
 	default:
 		echo '<p>Please enter your search requirments below:</p>';
 	}
 	
-?>
 
-		
-		
-		<!-- Display Search Form-->
-		<form action ="processSearch.php" method="GET">
-			<fieldset>
-				
-				<legend>Search Wines</legend>
-				
-				<div class="row">
-					<label class="search">Wine Name:</label>
-					<input type="text" value="<?php echo $wine;?>" name="wine" />
-				</div>
-				
-				<div class="row">
-				 <label class="search">Winery Name:</label>
-				 <input type="text" value="<?php echo $winery;?>" name="winery" />
-				</div>
-				<!--Display Region List -->
-				<div class="row">
-					<label class="search">Region:</label>
-					<select name="region">
-						<?php
-						 foreach($regionList as $regionOption)  {
+		$smartyEngine->assign('wine', $wine);
+		$smartyEngine->assign('winery', $winery);
+		$smartyEngine->assign('region', $region);
+		$smartyEngine->assign('grapeVariety', $grapeVariety);
+		$smartyEngine->assign('yearLowerBound', $yearLowerBound);
+		$smartyEngine->assign('yearUpperBound', $yearUpperBound);
+		$smartyEngine->assign('minWinesInStock', $minWinesInStock);
+		$smartyEngine->assign('minWinesOrdered', $minWinesOrdered);
+		$smartyEngine->assign('costLowerBound', $costLowerBound);
+		$smartyEngine->assign('costUpperBound', $costUpperBound);
+		$smartyEngine->assign('yearMinimum', $yearMinimum);
+		$smartyEngine->assign('yearMaximum', $yearMaximum);
+		$smartyEngine->assign('regionList', $regionList);
+		$smartyEngine->assign('grapeVarietyList', $grapeVarietyList);
+		$smartyEngine->display('search.tpl');
+		$smartyEngine->display('footer.tpl');
 
-
-							if (strcmp($regionOption, $region) == 0)
-								echo '<option value="'. $regionOption . '" selected="selected">'.$regionOption.'</option>';
-							else
-								echo '<option value="'. $regionOption . '">'.$regionOption.'</option>';
-						}
-						?>
-					</select>
-				</div>
-				
-				<!--Display Grape Variety List -->	
-				<div class="row">
-					<label class="search">Grape Variety:</label>
-					<select name="grapeVariety">
-						<?php
-
-						 foreach($grapeVarietyList as $grapeVarietyOption){
-							if (strcmp($grapeVarietyOption, $grapeVariety) == 0)
-								echo '<option value="'. $grapeVarietyOption. '" selected="selected">'. $grapeVarietyOption. '</option>';
-							else
-								echo '<option value="'. $grapeVarietyOption. '">'. $grapeVarietyOption. '</option>';
-						}
-						?>
-					</select>
-				</div>
-				
-				<!-- Display Year Lower -->
-				<div class="row"> 	
-					<label class="search">Year Lower Bound:</label>
-					<select name="yearLowerBound">
-						
-						<?php
-						for ($ylb = $yearMinimum; $ylb <= $yearMaximum; $ylb++)
-						{
-							if ($ylb == $yearLowerBound)
-								echo '<option value="'.$ylb.'" selected="selected">'.$ylb.'</option>';
-							else
-								echo '<option value="'.$ylb.'">'.$ylb.'</option>';
-						}		
-						?>		
-					</select>
-				</div>
-				<!-- Display Year Upper -->
-				<div class="row">
-					<label class="search">Year Upper Bound:</label>
-					<select name="yearUpperBound">
-						<?php
-						for ($yub = $yearMaximum; $yub >= $yearMinimum; $yub--)
-						{
-							if ($yub == $yearUpperBound)
-								echo '<option value="'.$yub.'" selected="selected">'.$yub.'</option>';
-							else
-								echo '<option value="'.$yub.'">'.$yub.'</option>';
-						}		
-						?>		
-					</select>
-				</div>
-				
-				<!-- Display Minimum Wines In Stock-->
-				<div class="row">
-					<label class="search">Minimum Wines in Stock:</label>
-					<input type="text" value="<?php echo $minWinesInStock;?>" name="minWinesInStock" />
-				</div>
-				<!-- Display Minimum Wines Ordered -->
-				<div class="row">
-					<label class="search">Minimum Wines Ordered:</label>
-					<input type="text" value="<?php echo $minWinesOrdered;?>" name="minWinesOrdered" />
-				</div>
-				
-				<!-- Display Cost Range-->
-				<div class="row">
-					<label class="search">Cost Minimum:</label>
-					<input type="text" value="<?php echo $costLowerBound;?>" name="costLowerBound" />
-				</div>
-				<div class="row">
-					<label class="search">Cost Maximum:</label>
-					<input type="text" value="<?php echo $costUpperBound;?>" name="costUpperBound" />
-				</div>
-			
-				<div class="row">
-					<input type="submit" name="submit" value=" Search " class="search"> 
-					<input type="reset">
-				</div>
-			</fieldset>
-			</form>
-	
-	</body>
-
-</html>
-
-<?php
 	// Destroy the PDO
 	destroyPDO($pdo);
 ?>

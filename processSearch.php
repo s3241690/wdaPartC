@@ -1,10 +1,4 @@
-<html>
-	<head>
-		<Title>WDA Assignment 1: Wine Database Results Page</Title>
-		<link rel="stylesheet" href="style.css" type="text/css" />
-	</head>
-	
-	<body>
+
 
 <?php
 
@@ -37,10 +31,7 @@ if(!isset($_GET['costUpperBound']))
 	$errors = -1;
 
 
-if ($errors != null)
-{
-	die('<p>You are trying to acces the page in an unauthrised way, please the main to search page,<a href="search.php">here</a>to launch your query.</p>');
-}
+
 			
 /* Collect GET Search Criteria */
 if(!empty($_GET['wine']))
@@ -185,12 +176,12 @@ if(isset($grapeVariety)){
 
 /* If Minimum wines in Stock selected add as criteria */
 if (isset($minWinesInStock)){
-	$query .=" HAVING total_on_hand >= {$minWinesInStock}";
+	$query .=" HAVING available >= {$minWinesInStock}";
 }
 
 /* If Minimum wines Ordered selected add as criteria */
 if (isset($minWinesOrdered)){
-	$query .=" AND total_ordered > {$minWinesOrdered}";
+	$query .=" AND total_sold > {$minWinesOrdered}";
 }
 
 
@@ -201,92 +192,43 @@ if (isset($minWinesOrdered)){
 
 $result = $pdo->query($query);
 
-
-  $i = 0;
-  while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-	$wineDetails[$i] = $row;
-	$i++;
-  }
-
-
-echo '<h1>WineStore Database: Search Results</h1>';
-
-
-/* Create Back Button*/
-echo '<a href="'.$returnString.'"><--Back</a> <a href="search.php">New Search</a>';
-echo '<br />';
-
-/* Check if there are any Results and display*/
-$tableSize = count($wineDetails);
-if ($tableSize > 0)
-{
-	echo $num_of_rows;
 	
+  $j = 0;
+  while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+	$wineDetails[$j] = $row;
+	
+	$j++;
+	
+  }
+  
 
+  
+  
+  	// Destroy the PDO
+	destroyPDO($pdo);
+	
+	$numOfResults = count($wineDetails);
+		define("USER_HOME_DIR", "/home/stud/s3241690");
+		require(USER_HOME_DIR . "/php/Smarty-3.1.11/libs/Smarty.class.php");
+		$smartyEngine = new Smarty();
+		$smartyEngine->template_dir = USER_HOME_DIR . "/php/Smarty-Work-Dir/templates";
+		$smartyEngine->compile_dir = USER_HOME_DIR . "/php/Smarty-Work-Dir/templates_c";
+		$smartyEngine->cache_dir = USER_HOME_DIR . "/php/Smarty-Work-Dir/cache";
+		$smartyEngine->config_dir = USER_HOME_DIR . "/php/Smarty-Work-Dir/configs";
+		$smartyEngine->display('header.tpl');
+	
+	if($numOfResults > 0){
 
-	echo '<table>';
-		
-	echo '<th>Wine Name</th>';
-	echo '<th>Winery Name</th>';
-	echo '<th>Grape Variety</th>';
-	echo '<th>Region</th>';
-	echo '<th>Price</th>';
-	echo '<th>Available</th>';
-	echo '<th>Total Sold</th>';
-	echo '<th>Total Revenue</th>';
-
-
-
-		
-			for($t=0;$t<$tableSize;$t++)
-			{
-				echo '<tr>';
-					
-					echo '<td>';
-						echo $wineDetails[$t]['wine_name'];
-					echo '</td>';
-							
-					echo '<td>';
-						echo $wineDetails[$t]['winery_name'];
-					echo '</td>';
-
-					echo '<td>';
-						echo $wineDetails[$t]['variety'];
-					echo '</td>';
-
-					echo '<td>';
-						echo $wineDetails[$t]['region_name'];
-					echo '</td>';
-
-					echo '<td>';
-						echo $wineDetails[$t]['price'];
-					echo '</td>';
-
-					echo '<td>';
-						echo $wineDetails[$t]['available'];
-					echo '</td>';
-
-					echo '<td>';
-						echo $wineDetails[$t]['total_sold'];
-					echo '</td>';
-
-					echo '<td>';
-						echo $wineDetails[$t]['total_revenue'];
-					echo '</td>';				
-				
-				echo '</tr>';
-			}
-		
-	echo '</table>';
-}
-else
-{
-	echo "<p>Your Query returned no results.</p>";
-}
+		$smartyEngine->assign('title', 'WDA: Search Results');
+		$smartyEngine->assign('returnString', $returnString);
+		$smartyEngine->assign('wines', $wineDetails);
+		$smartyEngine->display('searchResults.tpl');
+	}
+	else{
+		$smartyEngine->display('noResults.tpl');
+	}
+	
+	$smartyEngine->display('footer.tpl');
 
 ?>
-
-
-</body>
-</html> 
 
