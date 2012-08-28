@@ -167,7 +167,7 @@ if(isset($costLowerBound)){
 /* If grape_variety selected create IN subquery so that all the varieties of the wine can still be Concatinated in the main select clause*/	
 if(isset($grapeVariety)){
  $query .="AND wine.wine_id IN (SELECT wine.wine_id FROM wine, wine_variety, grape_variety WHERE wine_variety.variety_id "
-		."= grape_variety.variety_id AND wine.wine_id = wine_variety.wine_id AND grape_variety.variety LIKE 'RED') ";
+		."= grape_variety.variety_id AND wine.wine_id = wine_variety.wine_id AND grape_variety.variety LIKE '{$grapeVariety}') ";
 }
  
 /* Group by Wine ID*/ 
